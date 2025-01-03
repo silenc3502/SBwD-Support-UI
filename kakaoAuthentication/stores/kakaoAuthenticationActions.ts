@@ -5,9 +5,10 @@ export const kakaoAuthenticationAction = {
         const { djangoAxiosInstance } = axiosUtility.createAxiosInstances()
 
         try {
-            return djangoAxiosInstance.get('/kakao-oauth/request-login-url').then((res) => {
-                console.log(`res: ${res}`)
-                window.location.href = res.data.url
+            return djangoAxiosInstance.post('/kakao-authentication/request-login-url').then((res) => {
+                console.log(`res: ${JSON.stringify(res)}`)
+
+                window.location.href = res.data
             })
         } catch (error) {
             console.log('requestKakaoOauthRedirectionToDjango() 중 에러:', error)
@@ -16,8 +17,9 @@ export const kakaoAuthenticationAction = {
     async requestAccessToken(code: string): Promise<string | null> {
         const { djangoAxiosInstance } = axiosUtility.createAxiosInstances();
         try {
-            const response = await djangoAxiosInstance.post('/kakao-oauth/redirect-access-token', code)
-            return response.data.userToken
+            const response = await djangoAxiosInstance.post('/kakao-authentication/request-access-token', code)
+            console.log(`res: ${JSON.stringify(response)}`)
+            return response.data
         } catch(error){
             console.log('Access Token 요청 중 문제 발생:', error)
             throw error
