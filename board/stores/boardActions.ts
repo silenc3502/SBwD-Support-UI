@@ -11,18 +11,22 @@ export const boardAction = {
 
             console.log("Response Data:", res.data);
 
+            // 서버 응답 데이터 구조 확인 후 필요한 값만 추출
+            const { boardList, totalItems, totalPages } = res.data;
+
             // 데이터 설정
-            this.boardList = res.data.boardList || [];
-            this.totalPages = res.data.totalPages || 0;
-            this.totalItems = res.data.totalItems || 0;
-            this.currentPage = page;
+            this.boardList = boardList || [];        // boardList가 없으면 빈 배열
+            this.totalPages = totalPages || 0;      // totalPages가 없으면 0
+            this.totalItems = totalItems || 0;      // totalItems가 없으면 0
+            this.currentPage = page;                // 현재 페이지는 요청한 page로 설정
         } catch (error) {
             console.error("requestBoardList() 중 에러:", error);
 
-            // 에러가 발생해도 상태를 초기화
+            // 에러가 발생하면 상태를 초기화
             this.boardList = [];
             this.totalPages = 0;
-            this.currentPage = 1;
+            this.totalItems = 0;
+            this.currentPage = 1;                   // 실패 시 페이지는 1로 초기화
         }
     },
     async requestCreateBoard(payload) {
@@ -56,6 +60,32 @@ export const boardAction = {
         } catch (error) {
             console.error("게시글 정보를 가져오는 데 실패했습니다:", error);
             this.board = null;
+        }
+    },
+    async requestModifyBoard(boardId, boardDetails) {
+        try {
+            const { djangoAxiosInstance } = axiosUtility.createAxiosInstances();
+            const response = await djangoAxiosInstance.put(`/board/${boardId}`, {
+                title: boardDetails.title,
+                content: boardDetails.content,
+                userToken: boardDetails.userToken,  // userToken 포함
+            });
+
+            console.log("게시글 수정 성공:", response.data);
+            this.board = response.data; // 수정된 게시글을 스토어에 반영
+        } catch (error) {
+            console.error('게시글 수정 요청 중 에러 발생:', error);
+            throw error; // 에러를 다시 던져서 상위 컴포넌트에서 처리하도록 함
+        }
+    },
+    async requestDeleteBoard(boardId) {
+        try {
+            const { djangoAxiosInstance } = axiosUtility.createAxiosInstances();
+            const response = await djangoAxiosInstance.delete(`/board/${boardId}`);
+            console.log("게시글 삭제 성공:", response.data);
+        } catch (error) {
+            console.error("게시글 삭제 요청 중 에러 발생:", error);
+            throw error; // 에러를 다시 던져서 상위 컴포넌트에서 처리하도록 함
         }
     },
 }

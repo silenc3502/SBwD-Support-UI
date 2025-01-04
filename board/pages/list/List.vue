@@ -21,11 +21,13 @@
                         <v-data-table
                             v-else
                             :items="boardList"
-                            :headers="headers"
+                            :headers="headerTitle"
                             :items-per-page="pageSize"
                             :page.sync="currentPage"
+                            v-model:pagination="pagination"
                             class="elevation-1"
                             @click:row="goToDetail"
+                            item-value="boardId"
                             dense
                         >
                             <template #item.createDate="{ item }">
@@ -53,19 +55,34 @@ import { useBoardStore } from '~/stores/boardStore'; // Assuming Pinia store
 const router = useRouter();
 const boardStore = useBoardStore();
 
-const boardList = computed(() => boardStore.boardList);
+const boardList = computed(() => {
+    return boardStore.boardList.map(board => ({
+        boardId: board.boardId,
+        title: board.title,
+        content: board.content,
+        nickname: board.nickname,  // nickname만 그대로 사용
+        createDate: board.createDate  // createDate를 그대로 사용
+    }));
+});
+
 const totalPages = computed(() => boardStore.totalPages);
 const currentPage = computed({
     get: () => boardStore.currentPage,
     set: (page) => {
-        boardStore.currentPage = page; // Manually update the store when currentPage changes
+        boardStore.currentPage = page;
     },
 });
 
-const headers = [
-    { text: "Title", value: "title", align: "start" },
-    { text: "Author", value: "nickname" },
-    { text: "Created Date", value: "createDate" },
+const pagination = ref({
+    page: 1,
+    itemsPerPage: 10
+});
+
+const headerTitle = [
+    { title: 'No', align: 'start', sortable: true, key: 'boardId' },
+    { title: '제목', align: 'end', key: 'title' },
+    { title: '작성자', align: 'end', key: 'nickname' },
+    { title: '작성일자', align: 'end', key: 'createDate' },
 ];
 
 const pageSize = ref(10);
@@ -99,7 +116,7 @@ const goToCreateBoard = () => {
     router.push({ path: '/board/register' });
 };
 
-// Format date
+// Format date to 'yyyy-mm-dd' style
 const formatDate = (dateString) => {
     const options = { year: "numeric", month: "2-digit", day: "2-digit" };
     return new Date(dateString).toLocaleDateString(undefined, options);

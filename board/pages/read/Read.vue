@@ -107,7 +107,7 @@ const deleteBoard = async () => {
     const confirmDelete = confirm("정말로 게시글을 삭제하시겠습니까?");
     if (confirmDelete) {
         try {
-            await boardStore.deleteBoard(boardId);
+            await boardStore.requestDeleteBoard(boardId);
             router.push('/board/list');  // 삭제 후 목록 페이지로 리디렉션
         } catch (error) {
             console.error("게시글 삭제 중 에러 발생:", error);

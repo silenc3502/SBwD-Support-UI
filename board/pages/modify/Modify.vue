@@ -86,8 +86,17 @@ const fetchBoardDetails = async () => {
 
 // 게시글 수정 함수
 const updateBoard = async () => {
+    const userToken = localStorage.getItem("userToken");
+
+    // 서버가 예상하는 데이터 형식에 맞게 구성
+    const boardData = {
+        title: boardDetails.value.title,
+        content: boardDetails.value.content,
+        userToken: userToken,  // userToken을 포함시킴
+    };
+
     try {
-        await boardStore.updateBoard(boardId, boardDetails.value);
+        await boardStore.requestModifyBoard(boardId, boardData);
         router.push('/board/list');  // 수정 후 목록 페이지로 리디렉션
     } catch (error) {
         console.error("게시글 수정 중 에러 발생:", error);
